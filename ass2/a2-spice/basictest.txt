@@ -1,0 +1,9 @@
+haeyashdf
+asildfhasdhvf
+.circuit
+Vs 1 GND dc 2
+R1 1 2 1
+R2 2 GND 1
+.end
+ajsfbakajshdf
+askdjbfl
