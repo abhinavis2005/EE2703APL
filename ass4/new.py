@@ -172,8 +172,20 @@ def plot(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid
     X, Y = np.meshgrid(x_grid, y_grid, indexing="xy")
     radius = 0.6
 
-    for i in range(len(x)):
-        # Calculate the distance from each grid point to the (x[i], y[i]) point
+
+    artist = ax.imshow(
+            heatmap.T,
+            cmap = 'plasma',
+            interpolation='gaussian',
+            extent=[x_min, x_max, y_min, y_max],
+            origin='lower',
+            alpha=0.5
+        )
+    def update(frame):
+        nonlocal heatmap
+        nonlocal artist
+        artist.remove()
+        i = frame
         distance = np.sqrt((X - x[i]) ** 2 + (Y - y[i]) ** 2).T
 
         # Add the frequency to the heatmap within the circular region
@@ -182,16 +194,17 @@ def plot(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid
         )
 
         heatmap += influence
-    artist = AxesImage(
-        ax,
-        cmap = 'plasma',
-        interpolation='gaussian',
-        extent=[x_min, x_max, y_min, y_max],
-        origin="lower",
-        alpha = 0.5
-    )
-    artist.set_data(heatmap.T)
-    artist.axes.add_artist(artist)
+        artist = ax.imshow(
+            heatmap.T,
+            cmap = 'plasma',
+            interpolation='gaussian',
+            extent=[x_min, x_max, y_min, y_max],
+            origin='lower',
+            alpha=0.4
+        )
+        return [artist]
+    from matplotlib.animation import FuncAnimation
+    ani = FuncAnimation(fig, update, frames=len(x), interval=0, blit=False, repeat=False)
     plt.show()
 
 
@@ -210,8 +223,7 @@ if __name__ == "__main__":
 
     grid_size = (145, 40)  # Number of pixels in x and y``
 
-
-    inputStr = "n today’s fast-paced world, the importance of connection cannot be overstated. With technology bridging gaps between distances, people find it easier than ever to communicate. Social media platforms, messaging apps, and video calls have transformed how we interact, making it possible to maintain relationships regardless of geographical barriers. However, this ease of communication often leads to superficial connections, where the depth of relationships may diminish. It’s crucial to strike a balance between digital interaction and meaningful in-person encounters. Engaging in face-to-face conversations fosters genuine connections that technology cannot replicate. Simple gestures like a warm smile, a hug, or sharing a laugh create memories that last a lifetime. Additionally, nurturing friendships requires effort; taking time to check in, share experiences, and be present for one another is essential. As we navigate through our busy lives, prioritizing real connections can lead to a more fulfilling existence. Whether it’s spending quality time with family or reconnecting with old friends, these moments enrich our lives and provide support in challenging times. Ultimately, the bonds we cultivate shape our experiences and contribute to our overall well-being, reminding us that, at the heart of life, connection is what truly matters."
+    inputStr="In a quaint little town nestled between rolling hills, life unfolds at a leisurely pace. The sun rises gently, casting a warm glow over the cobblestone streets, where children play and neighbors greet each other with friendly smiles. Market stalls brim with fresh produce, and the aroma of freshly baked bread wafts through the air. Locals gather at the café, exchanging stories and laughter over steaming cups of coffee. As the day progresses, artists set up their easels, capturing the picturesque scenery. In this idyllic setting, time seems to stand still, inviting everyone to savor each moment and cherish community bonds."
 
     x, y, frequencies = genFreq(inputStr, keymapping)
 
