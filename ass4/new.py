@@ -172,10 +172,11 @@ def plot(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid
     X, Y = np.meshgrid(x_grid, y_grid, indexing="xy")
     radius = 0.6
 
-
+    colors = ["blue", "green", "yellow", "orange", "red"]
+    blue_red = mcolors.LinearSegmentedColormap.from_list("blue_red", colors)
     artist = ax.imshow(
             heatmap.T,
-            cmap = 'plasma',
+            cmap = blue_red,
             interpolation='gaussian',
             extent=[x_min, x_max, y_min, y_max],
             origin='lower',
@@ -196,7 +197,7 @@ def plot(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid
         heatmap += influence
         artist = ax.imshow(
             heatmap.T,
-            cmap = 'plasma',
+            cmap = blue_red,
             interpolation='gaussian',
             extent=[x_min, x_max, y_min, y_max],
             origin='lower',
