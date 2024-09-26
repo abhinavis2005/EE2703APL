@@ -3,7 +3,10 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from collections import defaultdict
 import matplotlib.colors as mcolors
+import matplotlib.animation as animation
 
+def gradual_decay(distance, radius):
+    return (1 - (distance / radius) ** 3) * (distance <= radius)
 
 QWERTY_LAYOUT = {
     "row1": {
@@ -145,18 +148,64 @@ def genKeyboardLayout(ax: plt.axes, layout: dict) -> dict:
 
 
 def genFreq(inpStr: str, keyMapping: dict) -> tuple[np.array, np.array, np.array]:
-    x, y, z = list(),list(),list()
+    x, y, z = list(), list(), list()
 
     for char in inpStr:
         try:
             coords = keyMapping[char]
-           
+
             x.append(coords[0] + 0.5)
             y.append(coords[1] + 0.5)
             z.append(1)
         except:
             pass
     return x, y, z
+
+def plot(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid_size:tuple):
+    heatmap = np.zeros(grid_size)
+    x_min, x_max = 0,14.5
+    y_min, y_max = 0,4
+
+    x_grid = np.linspace(x_min, x_max, grid_size[0])
+    y_grid = np.linspace(y_min, y_max, grid_size[1])
+    X, Y = np.meshgrid(x_grid, y_grid, indexing="xy")
+    radius = 0.6
+
+    for i in range(len(x)):
+        # Calculate the distance from each grid point to the (x[i], y[i]) point
+        distance = np.sqrt((X - x[i]) ** 2 + (Y - y[i]) ** 2).T
+
+        # Add the frequency to the heatmap within the circular region
+        influence = (
+            frequencies[i] * (distance <= radius) * gradual_decay(distance, radius)
+        )
+
+        heatmap += influence
+    colors = ["blue", "green", "yellow", "orange", "red"]
+    blue_red = mcolors.LinearSegmentedColormap.from_list("blue_red", colors)
+
+    plt.imshow(
+        heatmap.T,
+        cmap=blue_red,
+        interpolation="gaussian",
+        extent=[x_min, x_max, y_min, y_max],
+        origin="lower",
+        alpha=0.4,
+    )
+    plt.colorbar()
+    def update(frame):
+        i = frame
+        distance = np.sqrt((X - x[i]) ** 2 + (Y - y[i]) ** 2).T
+
+        # Add the frequency to the heatmap within the circular region
+        influence = (
+            frequencies[i] * (distance <= radius) * gradual_decay(distance, radius)
+        )
+        heatmap += influence
+        return heatmap.T 
+    
+    ani=animation.FuncAnimation(plt, func=update, frames=len(inputStr))
+    plt.show()
     
 
 
@@ -175,73 +224,16 @@ if __name__ == "__main__":
 
     grid_size = (145, 40)  # Number of pixels in x and y``
 
-    heatmap = np.zeros(grid_size)
-    x_min, x_max = 0, 14.5
-    y_min, y_max = 0, 4
-
-    x_grid = np.linspace(x_min, x_max, grid_size[0])
-    y_grid = np.linspace(y_min, y_max, grid_size[1])
-    X, Y = np.meshgrid(x_grid, y_grid, indexing="xy")
-    radius = 0.6
-
-    def gradual_decay(distance, radius):
-        return (1 - (distance / radius) ** 3) * (distance <= radius)
-
-    # Example usage
 
     inputStr = "n today’s fast-paced world, the importance of connection cannot be overstated. With technology bridging gaps between distances, people find it easier than ever to communicate. Social media platforms, messaging apps, and video calls have transformed how we interact, making it possible to maintain relationships regardless of geographical barriers. However, this ease of communication often leads to superficial connections, where the depth of relationships may diminish. It’s crucial to strike a balance between digital interaction and meaningful in-person encounters. Engaging in face-to-face conversations fosters genuine connections that technology cannot replicate. Simple gestures like a warm smile, a hug, or sharing a laugh create memories that last a lifetime. Additionally, nurturing friendships requires effort; taking time to check in, share experiences, and be present for one another is essential. As we navigate through our busy lives, prioritizing real connections can lead to a more fulfilling existence. Whether it’s spending quality time with family or reconnecting with old friends, these moments enrich our lives and provide support in challenging times. Ultimately, the bonds we cultivate shape our experiences and contribute to our overall well-being, reminding us that, at the heart of life, connection is what truly matters."
-    inputStr = "for a frustrated gamer"
+
     x, y, frequencies = genFreq(inputStr, keymapping)
+
+
+    plot(inputStr, x, y, frequencies, gradual_decay, grid_size)
+
+
+
     
-    for i in range(len(x)):
-        # Calculate the distance from each grid point to the (x[i], y[i]) point
-        distance = np.sqrt((X - x[i]) ** 2 + (Y - y[i]) ** 2).T
-
-        # Add the frequency to the heatmap within the circular region
-        influence = (
-            frequencies[i] * (distance <= radius) * gradual_decay(distance, radius)
-        )
-
-        heatmap += influence
-    colors = ["blue", "green", "yellow", "orange", "red"]
-    blue_red = mcolors.LinearSegmentedColormap.from_list("blue_red", colors)
-
-    plt.imshow(
-        heatmap.T,
-        cmap=blue_red,
-        interpolation="bilinear",
-        extent=[x_min, x_max, y_min, y_max],
-        origin="lower",
-        alpha=0.5,
-    )
-    plt.colorbar()
-
-    # inputStr = "india"
-    # coordinates_array = np.empty((-1,2))
-    # for char in inputStr:
-    #     coords = keymapping[char]
-    #     coordinates_array = np.append(coordinates_array, [[coords[-1], coords[1]]], axis=0)
-
-    # x = coordinates_array[:, -1]
-    # y = coordinates_array[:, 0]
-
     plt.show()
 
-
-# data = np.random.rand(10, 12)
-
-# # Create a figure and axis
-# fig, ax = plt.subplots(figsize=(10, 8))
-
-# #draw the rectangle
-
-
-# # Create a heatmap
-# heatmap = ax.imshow(data, cmap='viridis', interpolation='bilinear')
-
-# # Add rectangles in the background
-
-# # Add a colorbar and title
-# plt.colorbar(heatmap)
-# plt.title('Heatmap with Rectangles in Background')
-# plt.show()
