@@ -4,6 +4,7 @@ from matplotlib.patches import Rectangle
 from collections import defaultdict
 import matplotlib.colors as mcolors
 import matplotlib.animation as animation
+from matplotlib.image import AxesImage
 
 def gradual_decay(distance, radius):
     return (1 - (distance / radius) ** 3) * (distance <= radius)
@@ -161,7 +162,7 @@ def genFreq(inpStr: str, keyMapping: dict) -> tuple[np.array, np.array, np.array
             pass
     return x, y, z
 
-def plot(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid_size:tuple):
+def plot(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid_size:tuple, ax, fig):
     heatmap = np.zeros(grid_size)
     x_min, x_max = 0,14.5
     y_min, y_max = 0,4
@@ -181,19 +182,17 @@ def plot(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid
         )
 
         heatmap += influence
-    colors = ["blue", "green", "yellow", "orange", "red"]
-    blue_red = mcolors.LinearSegmentedColormap.from_list("blue_red", colors)
-
-    plt.imshow(
-        heatmap.T,
-        cmap=blue_red,
-        interpolation="gaussian",
+    artist = AxesImage(
+        ax,
+        cmap = 'plasma',
+        interpolation='gaussian',
         extent=[x_min, x_max, y_min, y_max],
         origin="lower",
-        alpha=0.4,
+        alpha = 0.5
     )
+    artist.set_data(heatmap.T)
+    artist.axes.add_artist(artist)
     plt.show()
-    
 
 
 if __name__ == "__main__":
@@ -217,7 +216,7 @@ if __name__ == "__main__":
     x, y, frequencies = genFreq(inputStr, keymapping)
 
 
-    plot(inputStr, x, y, frequencies, gradual_decay, grid_size)
+    plot(inputStr, x, y, frequencies, gradual_decay, grid_size, ax, fig)
 
 
 
