@@ -192,19 +192,6 @@ def plot(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid
         origin="lower",
         alpha=0.4,
     )
-    plt.colorbar()
-    def update(frame):
-        i = frame
-        distance = np.sqrt((X - x[i]) ** 2 + (Y - y[i]) ** 2).T
-
-        # Add the frequency to the heatmap within the circular region
-        influence = (
-            frequencies[i] * (distance <= radius) * gradual_decay(distance, radius)
-        )
-        heatmap += influence
-        return heatmap.T 
-    
-    ani=animation.FuncAnimation(plt, func=update, frames=len(inputStr))
     plt.show()
     
 
