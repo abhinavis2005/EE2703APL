@@ -123,6 +123,7 @@ def genKeyboardLayout(ax: plt.axes, layout: dict) -> dict:
 
     for specialkey in special_keys:
         pos = special_keys[specialkey]  # coordinates of the key
+        key_mapping[specialkey] = special_keys[specialkey]
         length = (
             smallest_greatest_elem(cordinates[pos[1]], pos[0]) - pos[0]
         )  # length of the key
@@ -181,6 +182,7 @@ def plot(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid
             alpha=0.5
         )
     def update(frame):
+        print(frame)
         nonlocal heatmap
         nonlocal artist
         artist.remove()
@@ -204,7 +206,7 @@ def plot(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid
         return [artist]
     from matplotlib.animation import FuncAnimation
     ani = FuncAnimation(fig, update, frames=len(x), interval=0, blit=False, repeat=False)
-    ani.save('animation.mp4', writer='ffmpeg', fps=10) 
+    ani.save('animation.mp4', writer='ffmpeg', fps=60) 
 
 def findkey(xcoords:list, input_key:str, keymapping:dict)->str:
     min_distance = 100
@@ -232,10 +234,49 @@ def caculate_key_travel(keymapping:dict , input_string:str, layout:dict):
 
     for char in input_string:
         #decide which finger
-        home_row_key_used = findkey(x_coords, char, keymapping) 
-        pass
-        pass
-
+        if char.isupper():
+            #assume left shift is pressed when rightside key, and vice versa
+            home_row_key_used = findkey(x_coords, char.lower(), keymapping)
+            right_shift_used = layout["row3"]["keys"].index(home_row_key_used) <= 3
+            
+            if right_shift_used:
+                # adding key travel for shift
+                point1 = keymapping["Shift_R"]
+                point2 = layout["row3"]["positions"][-1]
+                distance = np.sqrt(np.square(point2[1]-point1[1])+np.square(point2[0]-point1[0]))
+                total_travel += distance
+                # adding key travel for the main key
+                point1 = keymapping[home_row_key_used] 
+                point2 = keymapping[char.lower()]
+                distance = np.sqrt(np.square(point2[1]-point1[1])+np.square(point2[0]-point1[0]))
+                total_travel += distance
+            else:
+                point1 = keymapping["Shift_L"]
+                point2 = layout["row3"]["positions"][0]
+                distance = np.sqrt(np.square(point2[1]-point1[1])+np.square(point2[0]-point1[0]))
+                total_travel += distance
+                # adding key travel for the main key
+                point1 = keymapping[home_row_key_used] 
+                point2 = keymapping[char.lower()]
+                distance = np.sqrt(np.square(point2[1]-point1[1])+np.square(point2[0]-point1[0]))
+                total_travel += distance
+        elif char.islower() or char.isnumeric():
+            home_row_key_used = findkey(x_coords, char, keymapping) 
+            point1 = keymapping[home_row_key_used] 
+            point2 = keymapping[char]
+            distance = np.sqrt(np.square(point2[1]-point1[1])+np.square(point2[0]-point1[0]))
+            total_travel += distance
+        else:
+            try:
+                home_row_key_used = findkey(x_coords, char, keymapping) 
+                point1 = keymapping[home_row_key_used] 
+                point2 = keymapping[char]
+                distance = np.sqrt(np.square(point2[1]-point1[1])+np.square(point2[0]-point1[0]))
+                total_travel += distance
+            except:
+                continue
+        
+    return total_travel
 
 if __name__ == "__main__":
     # main function
@@ -252,14 +293,14 @@ if __name__ == "__main__":
 
     grid_size = (145, 40)  # Number of pixels in x and y``
 
-    inputStr="In a quaint little town nestled between rolling hills, life unfolds at a leisurely pace. The sun rises gently, casting a warm glow over the cobblestone streets, where children play and neighbors greet each other with friendly smiles. Market stalls brim with fresh produce, and the aroma of freshly baked bread wafts through the air. Locals gather at the café, exchanging stories and laughter over steaming cups of coffee. As the day progresses, artists set up their easels, capturing the picturesque scenery. In this idyllic setting, time seems to stand still, inviting everyone to savor each moment and cherish community bonds."
-    inputStr="Technology has significantly transformed the way we live, work, and communicate. In the past few decades, advancements in fields such as computing, telecommunications, and artificial intelligence have revolutionized industries and reshaped society. From smartphones that connect us to the world instantly to automation that enhances efficiency in manufacturing, technology's impact is evident in every aspect of life. The rise of the internet has democratized access to information, enabling people to learn new skills, pursue opportunities, and interact with diverse cultures globally. Furthermore, AI and machine learning have introduced new possibilities in areas like healthcare, where predictive algorithms help diagnose diseases more accurately, and in transportation, where autonomous vehicles promise safer roads. However, with these advancements come challenges, including data privacy concerns, cybersecurity risks, and the potential displacement of jobs due to automation. As society continues to navigate this rapid technological evolution, it is essential to balance innovation with ethical considerations. Responsible development and regulation will play a crucial role in ensuring that technology continues to improve the quality of life for all, while mitigating its potential downsides. Ultimately, the future holds immense promise as technology continues to advance, but it requires careful stewardship to harness its full potential."
+    inputStr="Technology has significantly toransformed the way we live, work, and communicate. In the past few decades, advancements in fields such as computing, telecommunications, and artificial intelligence have revolutionized industries and reshaped society. From smartphones that connect us to the world instantly to automation that enhances efficiency in manufacturing, technology's impact is evident in every aspect of life. The rise of the internet has democratized access to information, enabling people to learn new skills, pursue opportunities, and interact with diverse cultures globally. Furthermore, AI and machine learning have introduced new possibilities in areas like healthcare, where predictive algorithms help diagnose diseases more accurately, and in transportation, where autonomous vehicles promise safer roads. However, with these advancements come challenges, including data privacy concerns, cybersecurity risks, and the potential displacement of jobs due to automation. As society continues to navigate this rapid technological evolution, it is essential to balance innovation with ethical considerations. Responsible development and regulation will play a crucial role in ensuring that technology continues to improve the quality of life for all, while mitigating its potential downsides. Ultimately, the future holds immense promise as technology continues to advance, but it requires careful stewardship to harness its full potential."
+    inputStr = "Abhinav"
     print(len(inputStr))
     x, y, frequencies = genFreq(inputStr, keymapping)
     
-    #caculate_key_travel(keymapping, inputStr, QWERTY_LAYOUT)
-    #plot(inputStr, x, y, frequencies, gradual_decay, grid_size, ax, fig)
-    print("finished")
+    distance = caculate_key_travel(keymapping, inputStr, QWERTY_LAYOUT)
+    plot(inputStr, x, y, frequencies, gradual_decay, grid_size, ax, fig)
+    print(f"Total distance travelled is {distance} units")
 
 
 
