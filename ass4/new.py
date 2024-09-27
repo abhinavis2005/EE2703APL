@@ -204,7 +204,37 @@ def plot(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid
         return [artist]
     from matplotlib.animation import FuncAnimation
     ani = FuncAnimation(fig, update, frames=len(x), interval=0, blit=False, repeat=False)
-    plt.show()
+    ani.save('animation.mp4', writer='ffmpeg', fps=10) 
+
+def findkey(xcoords:list, input_key:str, keymapping:dict)->str:
+    min_distance = 100
+    ret_key = ''
+    input_key = input_key.lower()
+    for (xcoord, key) in xcoords:
+        if abs(xcoord-keymapping[input_key][0]) <= min_distance:
+            min_distance = abs(xcoord -keymapping[input_key][0])
+            ret_key = key
+    return ret_key
+
+def caculate_key_travel(keymapping:dict , input_string:str, layout:dict):
+    home_row_keys = {}
+    # get the home row keys from row 3 (key 0-3 and 6-9)
+    for i in range(0,4):
+        home_row_keys[layout["row3"]["keys"][i]]=layout["row3"]["positions"][i]
+    for i in range(6,10):
+        home_row_keys[layout["row3"]["keys"][i]]=layout["row3"]["positions"][i]
+    pass
+
+    total_travel = 0
+    #list containing (x_coordinate, home_row_key)
+    x_coords = [(home_row_keys[key][0] , key) for key in home_row_keys]
+
+
+    for char in input_string:
+        #decide which finger
+        home_row_key_used = findkey(x_coords, char, keymapping) 
+        pass
+        pass
 
 
 if __name__ == "__main__":
@@ -223,11 +253,13 @@ if __name__ == "__main__":
     grid_size = (145, 40)  # Number of pixels in x and y``
 
     inputStr="In a quaint little town nestled between rolling hills, life unfolds at a leisurely pace. The sun rises gently, casting a warm glow over the cobblestone streets, where children play and neighbors greet each other with friendly smiles. Market stalls brim with fresh produce, and the aroma of freshly baked bread wafts through the air. Locals gather at the café, exchanging stories and laughter over steaming cups of coffee. As the day progresses, artists set up their easels, capturing the picturesque scenery. In this idyllic setting, time seems to stand still, inviting everyone to savor each moment and cherish community bonds."
-
+    inputStr="Technology has significantly transformed the way we live, work, and communicate. In the past few decades, advancements in fields such as computing, telecommunications, and artificial intelligence have revolutionized industries and reshaped society. From smartphones that connect us to the world instantly to automation that enhances efficiency in manufacturing, technology's impact is evident in every aspect of life. The rise of the internet has democratized access to information, enabling people to learn new skills, pursue opportunities, and interact with diverse cultures globally. Furthermore, AI and machine learning have introduced new possibilities in areas like healthcare, where predictive algorithms help diagnose diseases more accurately, and in transportation, where autonomous vehicles promise safer roads. However, with these advancements come challenges, including data privacy concerns, cybersecurity risks, and the potential displacement of jobs due to automation. As society continues to navigate this rapid technological evolution, it is essential to balance innovation with ethical considerations. Responsible development and regulation will play a crucial role in ensuring that technology continues to improve the quality of life for all, while mitigating its potential downsides. Ultimately, the future holds immense promise as technology continues to advance, but it requires careful stewardship to harness its full potential."
+    print(len(inputStr))
     x, y, frequencies = genFreq(inputStr, keymapping)
-
-
-    plot(inputStr, x, y, frequencies, gradual_decay, grid_size, ax, fig)
+    
+    #caculate_key_travel(keymapping, inputStr, QWERTY_LAYOUT)
+    #plot(inputStr, x, y, frequencies, gradual_decay, grid_size, ax, fig)
+    print("finished")
 
 
 
