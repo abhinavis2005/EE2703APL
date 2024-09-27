@@ -108,8 +108,6 @@ def genKeyboardLayout(ax: plt.axes, layout: dict) -> dict:
     # this dictionary stores the x values of every key at every y value
     # this comes in handy when we gen layout for special characters, and we need to determine their length
     for row in QWERTY_LAYOUT:
-        if row == "special_keys":
-            continue
         for index, key in enumerate(QWERTY_LAYOUT[row]["keys"]):
             key_mapping[key] = QWERTY_LAYOUT[row]["positions"][index]
             pos = QWERTY_LAYOUT[row]["positions"][index]
@@ -234,5 +232,4 @@ if __name__ == "__main__":
 
 
     
-    plt.show()
 
