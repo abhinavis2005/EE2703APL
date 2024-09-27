@@ -5,6 +5,7 @@ from collections import defaultdict
 import matplotlib.colors as mcolors
 import matplotlib.animation as animation
 from matplotlib.image import AxesImage
+import sys
 
 def gradual_decay(distance, radius):
     return (1 - (distance / radius) ** 3) * (distance <= radius)
@@ -171,6 +172,16 @@ def plot(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid
     X, Y = np.meshgrid(x_grid, y_grid, indexing="xy")
     radius = 0.6
 
+
+    distance = np.sqrt((X - x[0]) ** 2 + (Y - y[0]) ** 2).T
+
+    # Add the frequency to the heatmap within the circular region
+    influence = (
+        frequencies[0] * (distance <= radius) * gradual_decay(distance, radius)
+    )
+
+    heatmap += influence
+
     colors = ["blue", "green", "yellow", "orange", "red"]
     blue_red = mcolors.LinearSegmentedColormap.from_list("blue_red", colors)
     artist = ax.imshow(
@@ -179,7 +190,7 @@ def plot(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid
             interpolation='gaussian',
             extent=[x_min, x_max, y_min, y_max],
             origin='lower',
-            alpha=0.5
+            alpha=0.4
         )
     def update(frame):
         print(frame)
@@ -206,7 +217,42 @@ def plot(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid
         return [artist]
     from matplotlib.animation import FuncAnimation
     ani = FuncAnimation(fig, update, frames=len(x), interval=0, blit=False, repeat=False)
-    ani.save('animation.mp4', writer='ffmpeg', fps=60) 
+    plt.show()
+    #ani.save('animation.mp4', writer='ffmpeg', fps=60) 
+
+def plot1(inputStr:str, x:np.array, y:np.array, freq:np.array, gradualdecay, grid_size:tuple):
+    heatmap = np.zeros(grid_size)
+    x_min, x_max = 0,14.5
+    y_min, y_max = 0,4
+
+    x_grid = np.linspace(x_min, x_max, grid_size[0])
+    y_grid = np.linspace(y_min, y_max, grid_size[1])
+    X, Y = np.meshgrid(x_grid, y_grid, indexing="xy")
+    radius = 0.6
+
+    for i in range(len(x)):
+        # Calculate the distance from each grid point to the (x[i], y[i]) point
+        distance = np.sqrt((X - x[i]) ** 2 + (Y - y[i]) ** 2).T
+
+        # Add the frequency to the heatmap within the circular region
+        influence = (
+            frequencies[i] * (distance <= radius) * gradual_decay(distance, radius)
+        )
+
+        heatmap += influence
+    colors = ["blue", "green", "yellow", "orange", "red"]
+    blue_red = mcolors.LinearSegmentedColormap.from_list("blue_red", colors)
+
+    plt.imshow(
+        heatmap.T,
+        cmap=blue_red,
+        interpolation="gaussian",
+        extent=[x_min, x_max, y_min, y_max],
+        origin="lower",
+        alpha=0.4,
+    )
+    plt.show()
+    
 
 def findkey(xcoords:list, input_key:str, keymapping:dict)->str:
     min_distance = 100
@@ -294,12 +340,15 @@ if __name__ == "__main__":
     grid_size = (145, 40)  # Number of pixels in x and y``
 
     inputStr="Technology has significantly toransformed the way we live, work, and communicate. In the past few decades, advancements in fields such as computing, telecommunications, and artificial intelligence have revolutionized industries and reshaped society. From smartphones that connect us to the world instantly to automation that enhances efficiency in manufacturing, technology's impact is evident in every aspect of life. The rise of the internet has democratized access to information, enabling people to learn new skills, pursue opportunities, and interact with diverse cultures globally. Furthermore, AI and machine learning have introduced new possibilities in areas like healthcare, where predictive algorithms help diagnose diseases more accurately, and in transportation, where autonomous vehicles promise safer roads. However, with these advancements come challenges, including data privacy concerns, cybersecurity risks, and the potential displacement of jobs due to automation. As society continues to navigate this rapid technological evolution, it is essential to balance innovation with ethical considerations. Responsible development and regulation will play a crucial role in ensuring that technology continues to improve the quality of life for all, while mitigating its potential downsides. Ultimately, the future holds immense promise as technology continues to advance, but it requires careful stewardship to harness its full potential."
-    inputStr = "Abhinav"
+    #inputStr = "aaaaabb"
     print(len(inputStr))
     x, y, frequencies = genFreq(inputStr, keymapping)
-    
+    if len(sys.argv)>1:
+        if sys.argv[1] == "-a":
+            plot(inputStr, x, y, frequencies, gradual_decay, grid_size, ax, fig)
+    else:
+        plot1(inputStr, x, y, frequencies, gradual_decay, grid_size)
     distance = caculate_key_travel(keymapping, inputStr, QWERTY_LAYOUT)
-    plot(inputStr, x, y, frequencies, gradual_decay, grid_size, ax, fig)
     print(f"Total distance travelled is {distance} units")
 
 
