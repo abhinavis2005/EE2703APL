@@ -193,7 +193,7 @@ def caculate_key_travel(input_string: str, layout: dict, keys: dict):
     sum = 0
     for c in input_string:
         for key in keys[c]:  # iterating for each key to be pressed
-            if key == "Space": #ignoring space  
+            if key == "Space": #ignoring space
                 continue
             start_key = layout[key]["start"]  # home row key to be used
             pos1 = layout[start_key]["pos"]

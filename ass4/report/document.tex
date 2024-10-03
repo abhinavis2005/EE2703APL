@@ -1,0 +1,208 @@
+\subsection{Assignment 4}\label{assignment-4}
+
+\subsubsection{Approach followed}\label{approach-followed}
+
+\begin{itemize}
+\item
+  I first create a keyboard layout from the qwerty\_layout in the file
+  as in the keyboard heatmap programming quiz.
+\item
+  The keyboard layout is generated using matplotlib rectangles in thhe
+  function \texttt{genKeyboardLayout}
+\item
+  My heatmap is a pixel grid of 58 * 16 pixels in x, y coordinates.
+\item
+  Takes in an input string from the user.
+\item
+  I then generate two arrays x, y each containing x, y coordinate of
+  each key pressed for example:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    if i press a which has coordinates (1.75, 2) 1.75 gets appended to
+    x, and 2 gets appended to y
+  \item
+    This keeps track of the frequencies with which each coordinate in
+    the keyboard has been pressed.
+  \end{itemize}
+\item
+  I then call the \texttt{calculate\_key\_travel} function which
+  calculates the total distance travelled for pressing the entire text.
+  it follows the following logic -
+
+  \begin{itemize}
+  \tightlist
+  \item
+    for each character c in the \texttt{input\_string} it checks each
+    key to be pressed, and adds the distance to each of those keys onto
+    sum
+  \item
+    it does this byy going to the \texttt{characters} dictionary, which
+    contains a tuple consisting of each key to be pressed for achieving
+    a particular character.
+  \item
+    For eg, say we want to type A, the \texttt{characters} dictionary
+    will have a key \texttt{A} with the element
+    \texttt{(\textquotesingle{}Shift\_R\textquotesingle{},\ \textquotesingle{}a\textquotesingle{})},
+    so it adds the distance for going to both shift\_R and a.
+  \item
+    returns sum
+  \end{itemize}
+\item
+  if -a flag is passed using the command line, generates animation, else
+  saves heatmap.png
+\item
+  -a flags creates animation, although it takes time for longer text
+  samples.
+\item
+  -a calls the plot function (for animation) and otherwise calls the
+  plot1 function (without animatoin)
+\item
+  The plot function works as follows
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    Consists of heatmap array, containing an element for each pixel.
+  \item
+    Contains X, Y arrays which are 2d arrays constructed using
+    \texttt{np.meshgrip}
+  \item
+    For each letter, i update corresponding values in the heatmap array,
+    (inside a circle of radius 0.6 units) multiplied with a function
+    that has decreasing values as it goes further away from the center
+    of the key, to create a gradient effect.
+  \item
+    I define a custom colormap for the heatmap from blue to red and use
+    \texttt{plt.imshow} function to ccreate the heatmap and save it to
+    \texttt{heatmap.png}
+  \item
+    If i use the \texttt{plot} function with the -a flag for animation,
+    i create a function update, which gradually increments the heatmap
+    array, updates the artist , used as an arguement to
+    \texttt{FuncAnimation} function from numpy, and saves it to
+    \texttt{animation.gif}
+  \end{enumerate}
+\end{itemize}
+
+\subsubsection{The QWERTY LAYOUT FORMAT}\label{the-qwerty-layout-format}
+
+\begin{itemize}
+\tightlist
+\item
+  I follow the same layout format given in the programming quiz, the
+  layout has two dictionaries :
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    \texttt{keys} which contains a key for each key in the dictionary,
+    and the value is a dictionary of the format
+    \texttt{\{\textquotesingle{}pos\textquotesingle{}:\ (x,y),\ \textquotesingle{}start\textquotesingle{}:\textquotesingle{}home\_row\_key\textquotesingle{}\}}
+    where the pos is the coordinate of the given key and \texttt{start}
+    is the home row key to be used while typing that key
+  \item
+    \texttt{characters} which contains a character as key in the
+    dictionary , and each character corresponds to a tuple of individual
+    keys that have to be pressed for typing that key for example. to
+    obtain A, we have to type both \texttt{Shift\_R} and \texttt{a}
+  \end{enumerate}
+\end{itemize}
+
+\subsubsection{Results}\label{results}
+
+\paragraph{Sample Text 1 :}\label{sample-text-1}
+
+\begin{verbatim}
+The environment is a vital part of our planet, providing the resources we need to live and thrive. It encompasses everything from forests and oceans to the air we breathe and the ecosystems that sustain biodiversity. Protecting the environment is crucial for maintaining the balance of nature and ensuring a healthy future for all living organisms. Human activities like pollution, deforestation, and climate change are threatening this delicate balance, making it imperative for us to take action. By adopting sustainable practices, conserving natural resources, and reducing our carbon footprint, we can preserve the environment for future generations.
+\end{verbatim}
+
+Distance travelled for qwerty layout = 483.68 units
+
+Heatmap
+
+\begin{figure}
+\centering
+\includegraphics{./images/image1.png}
+\caption{Heatmap}
+\end{figure}
+
+Distance travelled for dvorak layout = 295.28 units
+
+Heatmap
+
+\begin{figure}
+\centering
+\includegraphics{./images/image2.png}
+\caption{Heatmap}
+\end{figure}
+
+Distance travelled for colemak layout = 208.830 units
+
+Heatmap
+
+\begin{figure}
+\centering
+\includegraphics{./images/image3.png}
+\caption{Heatmap}
+\end{figure}
+
+\paragraph{Sample text 2 :}\label{sample-text-2}
+
+\begin{verbatim}
+Programming is the art of crafting solutions through code, transforming ideas into functional applications that drive modern technology. It involves writing instructions in various languages like Python, Java, or C++ to communicate with computers and automate tasks. Programmers solve complex problems by breaking them down into manageable steps, creating efficient and scalable systems. The process fosters logical thinking, creativity, and persistence as developers debug and optimize their code. From websites and apps to artificial intelligence and data processing, programming powers innovation and shapes the digital landscape, making it an essential skill in today's rapidly evolving world.
+\end{verbatim}
+
+Distance travelled for qwerty layout = 506.98 units
+
+Heatmap
+
+\begin{figure}
+\centering
+\includegraphics{./images/image4.png}
+\caption{Heatmap}
+\end{figure}
+
+Distance travelled for dvorak layout = 373.016 units
+
+Heatmap
+
+\begin{figure}
+\centering
+\includegraphics{./images/image5.png}
+\caption{Heatmap}
+\end{figure}
+
+Distance travelled for colemak layout = 269.971 units
+
+Heatmap
+
+\begin{figure}
+\centering
+\includegraphics{./images/image6.png}
+\caption{Heatmap}
+\end{figure}
+
+\subsubsection{Steps to test code with different
+layouts}\label{steps-to-test-code-with-different-layouts}
+
+All the layout files have to be \textbf{imported} eg
+\texttt{import\ qwerty\_layout} or \texttt{import\ dvorak\_layout}
+
+all the layouts have been uploaded in the zip file.
+
+in the \texttt{main} block, update the layout used in the line
+\texttt{layout\ =\ qwerty\_layout}
+
+\subsubsection{Notes}\label{notes}
+
+\begin{itemize}
+\tightlist
+\item
+  All the \texttt{layout.py} has to be in the same directory as the
+  script.py, if default analysis keyboard needs to be changed, change
+  the \texttt{layout} to the required \texttt{layout}
+\end{itemize}
