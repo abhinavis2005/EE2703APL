@@ -126,19 +126,60 @@ def caculate_key_travel(input_string: str, layout: dict, keys: dict):
         for key in keys[c]:  # iterating for each key to be pressed
             if key == "Space": #ignoring space  
                 continue
-            start_key = layout[key]["start"]  # home row key to be used
-            pos1 = layout[start_key]["pos"]
+            start_pos = layout[key]["start"]  # home row key to be used
+            pos1 = start_pos
             pos2 = layout[key]["pos"]
             distance = np.sqrt((pos2[1] - pos1[1]) ** 2 + (pos2[0] - pos1[0]) ** 2)
             sum += distance
     return sum
 
+def layout_update(keys:dict) -> dict:
+    """
+    Takes in the initial layout, and changes the 
+    start from a str(name of the home row key) to the
+    pos (coordinates) of the home row key
+    """
+    for key in keys:
+        key_data = keys[key]
+        key_data['start'] = keys[key_data['start']]['pos']
+    return keys
+
 def neighbour_solution(keys:dict) -> dict:
     new_keys = keys.copy()
-    i, j = random.sample(range(len(keys)),2)
+    i, j = random.sample(list(keys.keys()),2)
     #only keys themselves change, not pos or homerow key
     new_keys[i], new_keys[j] = new_keys[j], new_keys[i] 
+    return new_keys
 
+def simulated_annealing(layout, initial_temp, cooling_rate, num_itreations, inpString):
+    current_distance = caculate_key_travel(inpString, layout.keys, layout.characters)
+
+    current_layout= layout.keys.copy()
+    best_layout = current_layout
+    best_distance = current_distance
+
+    temp = initial_temp
+    distances = [current_distance]
+    best_distances = [best_distance]
+
+    for i in range(num_itreations):
+        neighbour_layout = neighbour_solution(current_layout)
+        neighbour_distance = caculate_key_travel(inpString, neighbour_layout, layout.characters)
+        p = np.exp((current_distance - neighbour_distance)/ temp)
+
+        if neighbour_distance < current_distance or random.random() < p:
+            current_distance = neighbour_distance
+            current_layout = neighbour_layout
+
+            if current_distance < best_distance:
+                best_layout = current_layout.copy()
+                best_distance = current_distance
+        
+        temp *= cooling_rate
+        distances.append(current_distance)
+        best_distances.append(best_distance)
+
+        return best_distances, distances
 if __name__ == "__main__":
 
     fig, ax = plt.subplots(figsize=(14, 8))  # generating axes , fig object
@@ -154,14 +195,17 @@ if __name__ == "__main__":
     grid_size = (58, 16)  # Number of pixels in x and y`
 
     inputStr = input("Enter string : ")
-    x, y = genFreq(
-        inputStr, layout.keys, layout.characters
-    )  # x coordinate and y coordinates of each keypress
-    distance = caculate_key_travel(
-        inputStr, layout.keys, layout.characters
-    )  # calculating the key travel disance
+    layout_update(layout.keys)
+    initial_temp = 100
+    cooling_rate = 0.995
+    num_iterations = 100
+    best_distances, distances = simulated_annealing(qwerty_layout, initial_temp, cooling_rate, num_iterations, inputStr)
 
+    fig, ax1 = plt.subplots(figsize=(15,6))
+    ax1.set_title("Best Distances over iterations")
 
+    distance_line = ax1.plot(best_distances, 'r-')
+    cur_dist_line = ax1.plot(distances, 'g-')
+    plt.show()
 
-
-    print(f"Total distance travelled is {distance} units")
+    print(f"Total distance travelled is {best_distances[-1]} units")
